@@ -1,2 +1,44 @@
-# Real-time-Logger--OS-Kernel-Telemetry-HUD-v1.0-
-A real-time System Telemetry Overlay that bridges the gap between hardware interrupts and high-level process monitoring. The project utilizes a C++ Windows Kernel Hook to intercept raw hardware signals (mouse/keyboard) and a Python-based HUD to visualize the resulting execution costs on the operating system.
+# 👁️ Real-Time Logger: OS Kernel Telemetry HUD v1.0
+
+A high-performance, dual-layer system monitoring tool that bridges **C++ Global Hooks** with **Python Forensic Analysis**. This project provides a "God-View" into the Windows OS, intercepting hardware signals, process lifecycle events, and network sockets in real-time.
+
+---
+
+## 🚀 Features
+
+### 1. The Marauder's Map (Click Interceptor)
+* **Global Mouse Hooking**: Uses a C++ Low-Level Hook (`WH_MOUSE_LL`) to intercept signals before they reach the target application.
+* **Window DNA**: Identifies the `HWND`, Window Class, and Thread ID of any clicked element (Taskbar, Desktop, or System Apps).
+
+### 2. Process Birth Detection (Spawn Logger)
+* **Kernel Event Watcher**: Utilizes Windows Management Instrumentation (WMI) to detect the exact millisecond a new process is born.
+* **Lineage Tracing**: Automatically identifies the **Parent Process** to show the chain of command (e.g., `explorer.exe` -> `cmd.exe` -> `python.exe`).
+
+### 3. Forensic Deep-Dive
+* **Network Intelligence**: Scans for active IPv4/IPv6 connections and socket statuses (`ESTABLISHED`, `LISTENING`).
+* **Hardware Profiling**: Real-time tracking of Memory (RAM) usage and CPU thread counts per process.
+* **Security Insight**: Detects UAC elevation status (Admin vs. Standard privileges).
+
+---
+
+## 🏗️ Architecture
+
+The system operates via a **Producer-Consumer** model:
+1.  **The Producer (C++)**: `tracer.cpp` compiles into a lightweight background engine that pipes raw hex/system data to `stdout`.
+2.  **The Consumer (Python)**: `hud_visualizer.py` acts as a multi-threaded forensic suite, parsing the pipe and performing secondary lookups via `psutil` and `WMI`.
+
+---
+
+## 🛠️ Installation & Setup
+
+### Prerequisites
+* **OS**: Windows 10/11
+* **Compiler**: MinGW/g++
+* **Environment**: Python 3.10+
+
+### 1. Clone & Dependencies
+```bash
+git clone [https://github.com/Chandrakamal123/Real-time-Logger--OS-Kernel-Telemetry-HUD-v1.0-.git](https://github.com/Chandrakamal123/Real-time-Logger--OS-Kernel-Telemetry-HUD-v1.0-.git)
+cd Real-time-Logger
+pip install wmi pywin32 psutil
+
