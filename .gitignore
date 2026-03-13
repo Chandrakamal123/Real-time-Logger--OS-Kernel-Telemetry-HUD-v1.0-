@@ -1,0 +1,24 @@
+# Ignore Compiled Binaries (The C++ output)
+*.exe
+*.o
+*.obj
+
+# Ignore Python specific files
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.env
+
+# Ignore OS-specific files (Personal metadata)
+desktop.ini
+.DS_Store
+
+# Ignore temporary logs or backups
+*.log
+Backup_*/
+legacy_*/
+
+# Ignore User-specific paths if any are generated
+.vscode/
+.idea/
