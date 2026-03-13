@@ -42,3 +42,24 @@ git clone [https://github.com/Chandrakamal123/Real-time-Logger--OS-Kernel-Teleme
 cd Real-time-Logger
 pip install wmi pywin32 psutil
 
+### 2. Compile the Engine
+```bash
+g++ tracer.cpp -o tracer.exe
+
+
+### 2. Launch the HUD
+```bash
+python hud_visualizer.py
+
+
+### 3. Telemetry Output Example
+```bash
+[17:46:07.120] 🐣 PROCESS BIRTH DETECTED
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+⚙️ NAME      : chrome.exe (PID: 10212)
+👨‍👦 PARENT    : chrome.exe
+📂 LOCATION  : C:\Program Files\Google\Chrome\Application\chrome.exe
+🌐 NETWORK   : 192.168.1.5:55625 -> 142.250.190.46:443 [ESTABLISHED]
+📈 HARDWARE  : 41.00 MB RAM | 14 Threads
+!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
