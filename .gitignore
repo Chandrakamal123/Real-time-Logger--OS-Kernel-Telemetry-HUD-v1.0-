@@ -22,3 +22,11 @@ legacy_*/
 # Ignore User-specific paths if any are generated
 .vscode/
 .idea/
+
+
+# Hidden Prototypes
+app_forensics.py
+folder_forensics.py
+hud_visualizer.py
+tracer.cpp
+tracer.exe
