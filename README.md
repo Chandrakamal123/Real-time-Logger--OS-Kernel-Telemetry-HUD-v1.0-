@@ -36,3 +36,7 @@ Recently upgraded to a **Unified Control Center** with dynamic thread management
 1. Ensure you have the required dependencies installed:
    ```bash
    pip install psutil pypiwin32 wmi
+2. Run the master control center:
+   ```bash
+   python god_view.py
+3. Select your desired forensic module from the dropdown, hit Launch Module, and watch the Windows Kernel go to work.
