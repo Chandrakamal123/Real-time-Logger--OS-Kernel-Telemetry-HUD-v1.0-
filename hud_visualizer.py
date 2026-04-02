@@ -1,11 +1,10 @@
 import tkinter as tk
-import subprocess
 import threading
 import psutil
-import os
-import ctypes
-import wmi
 import pythoncom
+import time
+import wmi
+import ctypes
 from datetime import datetime
 
 class ForensicMarauderHUD:
@@ -16,6 +15,15 @@ class ForensicMarauderHUD:
         self.root.geometry("900x950+30+30")
         self.root.configure(bg='black')
 
+        # --- UI Buttons ---
+        self.copy_btn = tk.Button(root, text=" 📋 COPY LOG ", command=self.copy_to_clipboard, 
+                                  bg="#222222", fg="#00ff00", font=("Consolas", 10, "bold"), bd=1, cursor="hand2")
+        self.copy_btn.place(x=770, y=10)
+
+        self.close_btn = tk.Button(root, text=" EXIT X ", command=self.close_app, 
+                                   bg="#440000", fg="white", font=("Arial", 10, "bold"), bd=0, cursor="hand2")
+        self.close_btn.place(x=830, y=10)
+
         # Header
         self.title_label = tk.Label(root, text="👁️ GOD-VIEW: KERNEL FORENSICS", font=("Courier", 16, "bold"), fg="#00ff00", bg="black")
         self.title_label.pack(pady=15)
@@ -24,79 +32,133 @@ class ForensicMarauderHUD:
         self.console_text = tk.Text(root, font=("Consolas", 10), fg="white", bg="black", bd=0, highlightthickness=0)
         self.console_text.pack(expand=True, fill='both', padx=20, pady=5)
         
-        # Define Colors: Green for Clicks, Cyan for Births, Red for Network
+        # Define Colors
         self.console_text.tag_configure("SIGNAL", foreground="#00ff00") # Green
         self.console_text.tag_configure("BIRTH", foreground="#00ffff")  # Cyan
-        self.console_text.tag_configure("NET", foreground="#ff3333")    # Reddish-orange
-        self.console_text.tag_configure("HEADER", font=("Consolas", 10, "bold"))
+        self.console_text.tag_configure("HEADER", font=("Consolas", 10, "bold"), foreground="#ff3333") # Red
 
         self.root.bind("<Escape>", lambda e: self.close_app())
         self.running = True
         
-        self.start_tracer_engine()      
-        self.start_birth_watcher()     
+        self.log(">>> SYSTEM: Hooked into OS Telemetry. Waiting for Explorer.exe IO spike...", "SIGNAL")
+        self.log(">>> SYSTEM: Initiate Refresh to view detailed trace.\n", "SIGNAL")
+        
+        # Start Watchers
+        self.start_refresh_watcher()      
+        self.start_birth_watcher()    
 
     def log(self, msg, tag="SIGNAL"):
         self.console_text.insert(tk.END, msg + "\n", tag)
         self.console_text.see(tk.END)
 
-    def get_network_info(self, proc):
-        """Checks if the process has open internet/network connections."""
+    def copy_to_clipboard(self):
+        self.root.clipboard_clear()
+        self.root.clipboard_append(self.console_text.get("1.0", tk.END))
+        self.root.update() 
+        self.log("\n[!] LOG COPIED TO CLIPBOARD SUCCESSFULY.", "BIRTH")
+
+    def print_god_view_trace(self, proc, before_io, before_mem, before_cpu_cores):
+        timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+        
+        time.sleep(0.15) 
+        
         try:
-            connections = proc.connections(kind='inet')
-            if not connections:
-                return "No Active Connections"
-            
-            # Show the first 2 connections if they exist
-            net_list = []
-            for conn in connections[:2]:
-                l_addr = f"{conn.laddr.ip}:{conn.laddr.port}"
-                r_addr = f"{conn.raddr.ip}:{conn.raddr.port}" if conn.raddr else "LISTENING"
-                net_list.append(f"{l_addr} -> {r_addr} [{conn.status}]")
-            return " | ".join(net_list)
+            after_io = proc.io_counters().read_count + proc.io_counters().write_count
+            after_mem = proc.memory_info().rss / (1024 * 1024)
+            after_cpu_cores = psutil.cpu_percent(interval=0.1, percpu=True)
         except:
-            return "Access Denied / Not Available"
+            return
 
-    def analyze_process(self, pid, event_type="SIGNAL"):
-        try:
-            proc = psutil.Process(int(pid))
-            name = proc.name()
-            path = proc.exe()
-            
-            # 1. Parentage (Who gave birth?)
-            try:
-                parent = proc.parent().name() if proc.parent() else "System/Kernel"
-            except:
-                parent = "Unknown"
+        msg = f"\n[{timestamp}] 🔴 REFRESH SIGNAL DETECTED\n" + "=" * 80 + "\n"
+        
+        msg += "1. THE TRIGGER & SIGNAL ROUTING\n"
+        msg += "   |-- Origin: Mouse hardware sent a USB Interrupt Request (IRQ) to the Motherboard.\n"
+        msg += "   |-- CPU Action: CPU paused current tasks (Context Switch) to read the mouse click.\n"
+        msg += "   |-- Kernel Handoff: Windows Kernel (ntoskrnl.exe) translated the physical click into a virtual screen coordinate.\n"
+        msg += "   |-- Signal Owner: The signal was handed to User Space -> process 'Explorer.exe'.\n\n"
+        
+        msg += "2. TRANSLATION TO MACHINE LANGUAGE\n"
+        msg += "   |-- Note: Windows is pre-compiled. No on-the-fly compiling happens here.\n"
+        msg += "   |-- Fetching: Explorer.exe calls the Win32 API (User32.dll).\n"
+        msg += "   |-- Machine Code: API commands are broken down into x86-64 Assembly instructions (e.g., MOV, CMP, JMP).\n"
+        msg += "   |-- Transport: The Memory Controller moves these instructions from your RAM to the CPU's L1 Instruction Cache.\n\n"
+        
+        msg += f"3. SYSTEM STATE: BEFORE REFRESH\n"
+        msg += f"   |-- Explorer IO Operations: {before_io:,}\n"
+        msg += f"   |-- Explorer RAM Allocated: {before_mem:.2f} MB\n"
+        msg += f"   |-- CPU Core Loads: {before_cpu_cores}\n\n"
+        
+        msg += "4. CPU EXECUTION (THE APPROVAL)\n"
+        msg += "   |-- Execution: The CPU's Arithmetic Logic Unit (ALU) executes the instructions.\n"
+        msg += "   |-- Action 1: Query the Master File Table (NTFS) to see if Desktop files changed.\n"
+        msg += "   |-- Action 2: Recalculate the X and Y grid coordinates for every desktop icon.\n"
+        msg += "   |-- Approval: CPU finishes math, flags the Desktop Window Manager (DWM.exe) to repaint.\n\n"
+        
+        msg += f"5. SYSTEM STATE: AFTER REFRESH\n"
+        msg += f"   |-- Explorer IO Operations: {after_io:,} (+{after_io - before_io} operations)\n"
+        msg += f"   |-- Explorer RAM Allocated: {after_mem:.2f} MB\n"
+        msg += f"   |-- CPU Core Loads: {after_cpu_cores}\n\n"
+        
+        msg += "6. THE VISUAL OUTPUT\n"
+        msg += "   |-- Render: DWM sends the new pixel map to your GPU Framebuffer.\n"
+        msg += "   |-- Display: Your monitor refreshes its pixels (e.g., at 60Hz or 144Hz).\n"
+        msg += "   |-- Result: The screen flickers. The refresh is complete.\n"
+        msg += "=" * 80
 
-            # 2. Network Activity
-            net_status = self.get_network_info(proc)
-            
-            # 3. Stats
-            mem_mb = proc.memory_info().rss / (1024*1024)
-            timestamp = datetime.now().strftime("%H:%M:%S.%f")[:-3]
-            
-            # Formatting the output
-            if event_type == "BIRTH":
-                header = f"\n[{timestamp}] 🐣 PROCESS BIRTH DETECTED"
-                bar = "!" * 80
-                tag = "BIRTH"
-            else:
-                header = f"\n[{timestamp}] 🎯 INTERCEPTED CLICK"
-                bar = "=" * 80
-                tag = "SIGNAL"
+        self.root.after(0, self.log, msg, "SIGNAL")
 
-            output = f"{header}\n{bar}\n"
-            output += f"⚙️ NAME      : {name} (PID: {pid})\n"
-            output += f"👨‍👦 PARENT    : {parent}\n"
-            output += f"📂 LOCATION  : {path}\n"
-            output += f"🌐 NETWORK   : {net_status}\n"
-            output += f"📈 HARDWARE  : {mem_mb:.2f} MB RAM | {proc.num_threads()} Threads\n"
-            output += f"{bar}\n"
+    def start_refresh_watcher(self):
+        def watch():
+            explorer_proc = None
             
-            self.root.after(0, self.log, output, tag)
-        except (psutil.NoSuchProcess, psutil.AccessDenied):
-            pass
+            for p in psutil.process_iter(['name']):
+                if p.info['name'].lower() == 'explorer.exe':
+                    explorer_proc = p
+                    break
+            
+            if not explorer_proc: return
+            
+            psutil.cpu_percent(percpu=True)
+            counters = explorer_proc.io_counters()
+            last_io = counters.read_count + counters.write_count
+            time.sleep(1) 
+            
+            last_left_click_time = 0
+            
+            while self.running:
+                try:
+                    # STRICT LEFT-CLICK GATE: Only records when Left Mouse Button (0x01) is clicked.
+                    # This completely ignores Right-Clicks (0x02) so opening the menu does nothing.
+                    if ctypes.windll.user32.GetAsyncKeyState(0x01) & 0x8000:
+                        last_left_click_time = time.time()
+
+                    counters = explorer_proc.io_counters()
+                    current_io = counters.read_count + counters.write_count
+                    
+                    if last_io != 0 and (current_io - last_io) > 10:
+                        # Only trigger if the Left click happened recently
+                        if (time.time() - last_left_click_time) < 2.0:
+                            before_io = last_io
+                            before_mem = explorer_proc.memory_info().rss / (1024 * 1024)
+                            before_cpu = psutil.cpu_percent(interval=0.1, percpu=True)
+                            
+                            threading.Thread(target=self.print_god_view_trace, 
+                                             args=(explorer_proc, before_io, before_mem, before_cpu), 
+                                             daemon=True).start()
+                            
+                            time.sleep(1.5) # Cooldown
+                            
+                            counters = explorer_proc.io_counters()
+                            last_io = counters.read_count + counters.write_count
+                            last_left_click_time = 0 # Consume click
+                            continue
+                    
+                    last_io = current_io
+                except: pass
+                
+                time.sleep(0.05) 
+                
+        threading.Thread(target=watch, daemon=True).start()
 
     def start_birth_watcher(self):
         def watch():
@@ -106,20 +168,12 @@ class ForensicMarauderHUD:
                 watcher = c.watch_for(notification_type="Creation", wmi_class="Win32_Process")
                 while self.running:
                     new_process = watcher()
-                    self.analyze_process(new_process.ProcessId, event_type="BIRTH")
+                    ts = datetime.now().strftime("%H:%M:%S.%f")[:-3]
+                    msg = f"[{ts}] 🐣 PROCESS BIRTH DETECTED: {new_process.Caption} (PID: {new_process.ProcessId})"
+                    self.root.after(0, self.log, msg, "BIRTH")
             except: pass
             finally: pythoncom.CoUninitialize()
         threading.Thread(target=watch, daemon=True).start()
-
-    def start_tracer_engine(self):
-        def stream():
-            process = subprocess.Popen(['tracer.exe'], stdout=subprocess.PIPE, text=True, bufsize=1)
-            for line in process.stdout:
-                if "SIGNAL_INTERCEPTED" in line:
-                    parts = line.strip().split('|')
-                    if len(parts) >= 6:
-                        self.analyze_process(parts[5], event_type="SIGNAL")
-        threading.Thread(target=stream, daemon=True).start()
 
     def close_app(self):
         self.running = False
