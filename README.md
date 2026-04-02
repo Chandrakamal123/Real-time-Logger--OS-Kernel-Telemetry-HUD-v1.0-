@@ -4,6 +4,16 @@ A high-performance, dual-layer system monitoring tool that bridges **C++ Global 
 
 Recently upgraded to a **Unified Control Center** with dynamic thread management, allowing seamless switching between different forensic lenses without crashing the kernel hooks.
 
+## 💡 Why I Built This (The Motivation)
+
+When you build an IoT project or a mechanical device, you can physically see how it works. You can watch the gears turn, trace the wires, and measure the voltage across a circuit. Hardware is tangible and honest. 
+
+But software—especially at the Operating System level—is treated like a black box. When you double-click an app or create a new folder, it just *happens* instantly on your screen as if by magic. 
+
+**I don't like magic. I wanted to see the digital gears turning.**
+
+I built this God-View HUD because I have the exact same curiosity for software architecture that I do for physical machines. I wanted to rip the lid off the Windows OS and watch the Kernel think in real-time. This project is my way of making the invisible, backend mechanics of a computer just as visible, raw, and understandable as a mechanical engine.
+
 ## 🚀 Features
 
 ### 1. 🎛️ Unified God View Architecture
